@@ -10,13 +10,10 @@ if you can find all the injection points. I can promise you that you are able to
 * Write notes on behalf of other users 
 * and much more...
 ### Installation
-You will need python 3 and flask. To install do: 
+You will need docker and docker-compose (Some unix OS doesn't include it in the installation of docker
+and therefore you have to manually install docker-compose). To install  do: 
 ```sh 
-$ git clone https://github.com/0xlimE/MySecretNotes.git 
-$ cd MySecretNotes 
-$ sudo apt-get install python3-pip 
-$ pip3 install flask
-$ python3 app.py 
+$ docker-compose up -d
 ``` 
 
 The project should run on port 5000 
