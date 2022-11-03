@@ -75,7 +75,7 @@ def notes():
             c = db.cursor()
             statement = """INSERT INTO notes(id,assocUser,dateWritten,note,publicID) VALUES(null,%s,'%s','%s',%s);""" %(session['userid'],time.strftime('%Y-%m-%d %H:%M:%S'),note,random.randrange(1000000000, 9999999999))
             print(statement)
-            c.execute(statement)
+            c.execute(statement, )
             db.commit()
             db.close()
         elif request.form['submit_button'] == 'import note':
@@ -113,8 +113,10 @@ def login():
         password = request.form['password']
         db = connect_db()
         c = db.cursor()
-        statement = "SELECT * FROM users WHERE username = '%s' AND password = '%s';" %(username, password)
-        c.execute(statement)
+        # Fix user input by removing string inputs and replacing it with a question mark
+        statement = "SELECT * FROM users WHERE username = ? AND password = ?;"
+        # Move username and password from the username and password field down to execution method
+        c.execute(statement, username, password)
         result = c.fetchall()
 
         if len(result) > 0:
@@ -153,9 +155,9 @@ def register():
             usererror = "That username is already in use by someone else!"
 
         if(not errored):
-            statement = """INSERT INTO users(id,username,password) VALUES(null,'%s','%s');""" %(username,password)
+            statement = """INSERT INTO users(id,username,password) VALUES(null,?,?);"""
             print(statement)
-            c.execute(statement)
+            c.execute(statement, username,password)
             db.commit()
             db.close()
             return f"""<html>
