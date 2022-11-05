@@ -116,7 +116,7 @@ def login():
         # Fix user input by removing string inputs and replacing it with a question mark
         statement = "SELECT * FROM users WHERE username = ? AND password = ?;"
         # Move username and password from the username and password field down to execution method
-        c.execute(statement, username, password)
+        c.execute(statement, (username, password))
         result = c.fetchall()
 
         if len(result) > 0:
