@@ -65,7 +65,6 @@ def index():
     else:
         return redirect(url_for('notes'))
 
-
 @app.route("/notes/", methods=('GET', 'POST'))
 @login_required
 def notes():
@@ -110,6 +109,8 @@ def notes():
 
 @app.route("/login/", methods=('GET', 'POST'))
 def login():
+    session.clear()
+
     error = ""
     if request.method == 'POST':
         username = request.form['username']
@@ -144,6 +145,7 @@ def login():
 
 @app.route("/register/", methods=('GET', 'POST'))
 def register():
+    session.clear()
     errored = False
     usererror = ""
     passworderror = ""
@@ -154,23 +156,21 @@ def register():
         password = request.form['password']
         db = connect_db()
         c = db.cursor()
-        pass_statement = """SELECT * FROM users WHERE password = '%s';""" %password
-        user_statement = """SELECT * FROM users WHERE username = '%s';""" %username
+        user_statement = """SELECT * FROM users WHERE username = ?;"""
 
-        c.execute(pass_statement)
-        if(len(c.fetchall())>0):
-            errored = True
-            passworderror = "That password is already in use by someone else!"
-
-        c.execute(user_statement)
+        c.execute(user_statement, (username,))
         if(len(c.fetchall())>0):
             errored = True
             usererror = "That username is already in use by someone else!"
 
         if(not errored):
-            statement = """INSERT INTO users(id,username,password) VALUES(null,?,?);"""
+            statement = """INSERT INTO users(id,username,salt,hashed_password) VALUES(null,?,?,?);"""
+            salt = bcrypt.gensalt()
+            hashed_pw = bcrypt.hashpw(password.encode('utf-8'),salt)
+
             print(statement)
-            c.execute(statement, username,password)
+            c.execute(statement, (username, salt.decode('utf-8'), hashed_pw.decode('utf-8')))
+
             db.commit()
             db.close()
             return f"""<html>
