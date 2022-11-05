@@ -37,6 +37,7 @@ CREATE TABLE users (
 
 INSERT INTO users VALUES(null,"admin", "$2b$12$/NiVWHZUAu1kIyVtebyuYe",  "$2b$12$/NiVWHZUAu1kIyVtebyuYeNZy1CQ04C6d7adkJSPTrCKkiwUxWeZu");
 INSERT INTO users VALUES(null,"bernardo", "$2b$12$uUDPHNTgwyqTE/cFJid5LO", "$2b$12$uUDPHNTgwyqTE/cFJid5LOrpnXwfrXwZW3ETA2b0Y/HXw3PMlIS9.");
+INSERT INTO users VALUES(null,"stud@secu18.itu.dk", "NO SALT", "INSERT_PASSWORD_HERE");
 INSERT INTO notes VALUES(null,2,"1993-09-23 10:10:10","hello my friend",1234567890);
 INSERT INTO notes VALUES(null,2,"1993-09-23 12:10:10","i want lunch pls",1234567891);
 
