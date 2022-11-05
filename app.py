@@ -1,4 +1,6 @@
 import json, sqlite3, click, functools, os, hashlib,time, random, sys
+#import bcrypt
+import bcrypt
 from flask import Flask, current_app, g, session, redirect, render_template, url_for, request
 
 
@@ -29,11 +31,12 @@ CREATE TABLE notes (
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL,
-    password TEXT NOT NULL
+    salt TEXT NOT NULL,
+    hashed_password TEXT NOT NULL
 );
 
-INSERT INTO users VALUES(null,"admin", "password");
-INSERT INTO users VALUES(null,"bernardo", "omgMPC");
+INSERT INTO users VALUES(null,"admin", "$2b$12$/NiVWHZUAu1kIyVtebyuYe",  "$2b$12$/NiVWHZUAu1kIyVtebyuYeNZy1CQ04C6d7adkJSPTrCKkiwUxWeZu");
+INSERT INTO users VALUES(null,"bernardo", "$2b$12$uUDPHNTgwyqTE/cFJid5LO", "$2b$12$uUDPHNTgwyqTE/cFJid5LOrpnXwfrXwZW3ETA2b0Y/HXw3PMlIS9.");
 INSERT INTO notes VALUES(null,2,"1993-09-23 10:10:10","hello my friend",1234567890);
 INSERT INTO notes VALUES(null,2,"1993-09-23 12:10:10","i want lunch pls",1234567891);
 
@@ -73,17 +76,17 @@ def notes():
             note = request.form['noteinput']
             db = connect_db()
             c = db.cursor()
-            statement = """INSERT INTO notes(id,assocUser,dateWritten,note,publicID) VALUES(null,%s,'%s','%s',%s);""" %(session['userid'],time.strftime('%Y-%m-%d %H:%M:%S'),note,random.randrange(1000000000, 9999999999))
+            statement = """INSERT INTO notes(id,assocUser,dateWritten,note,publicID) VALUES(null,%s,'%s',?,%s);""" %(session['userid'],time.strftime('%Y-%m-%d %H:%M:%S'),random.randrange(1000000000, 9999999999))
             print(statement)
-            c.execute(statement, )
+            c.execute(statement, (note, ))
             db.commit()
             db.close()
         elif request.form['submit_button'] == 'import note':
             noteid = request.form['noteid']
             db = connect_db()
             c = db.cursor()
-            statement = """SELECT * from NOTES where publicID = %s""" %noteid
-            c.execute(statement)
+            statement = """SELECT * from NOTES where publicID = ?"""
+            c.execute(statement, (noteid, ))
             result = c.fetchall()
             if(len(result)>0):
                 row = result[0]
@@ -114,9 +117,18 @@ def login():
         db = connect_db()
         c = db.cursor()
         # Fix user input by removing string inputs and replacing it with a question mark
-        statement = "SELECT * FROM users WHERE username = ? AND password = ?;"
+
         # Move username and password from the username and password field down to execution method
-        c.execute(statement, (username, password))
+        get_user_stm = "SELECT * FROM users WHERE username = ?"
+        c.execute(get_user_stm, (username, ))
+        user_res = c.fetchall()
+
+        salt = user_res[0][2]
+        hashed_pwd = bcrypt.hashpw(password.encode("utf-8"), salt.encode("utf-8")).decode("utf-8")
+
+        statement = "SELECT * FROM users WHERE username = ? AND hashed_password = ?;"
+        c.execute(statement, (username, hashed_pwd))
+
         result = c.fetchall()
 
         if len(result) > 0:
@@ -144,6 +156,7 @@ def register():
         c = db.cursor()
         pass_statement = """SELECT * FROM users WHERE password = '%s';""" %password
         user_statement = """SELECT * FROM users WHERE username = '%s';""" %username
+
         c.execute(pass_statement)
         if(len(c.fetchall())>0):
             errored = True
