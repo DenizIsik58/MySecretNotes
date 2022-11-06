@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   flask:
-    build: .
+    build: flask
     container_name: flaskApp
     volumes:
       - .:/flaskApp
@@ -10,4 +10,4 @@ services:
     ports:
       - "5000:5000"
     command: >
-      sh -c "python3 app.py"
+      sh -c "python3 flask/app.py"
