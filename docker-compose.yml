@@ -4,6 +4,8 @@ version: '3.9'
 networks:
   5G-WIFI:
     driver: bridge
+  gitlab:
+    name: gitlab-network
 
 services:
   flask:
@@ -31,6 +33,35 @@ services:
       - 5G-WIFI
     command: >
       sh -c "nginx -g 'daemon off;'"
+
+  gitlab:
+    image: 'gitlab/gitlab-ee:latest'
+    restart: always
+    hostname: 'localhost'
+    environment:
+      GITLAB_OMNIBUS_CONFIG:
+        external_url 'http://localhost'
+    ports:
+      - '8080:80'
+      - '8443:443'
+    volumes:
+      - ./gitlab/config:/etc/gitlab
+      - ./gitlab/logs:/var/log/gitlab
+      - ./gitlab/data:/var/opt/gitlab
+    shm_size: '256m'
+    networks:
+      - gitlab
+
+  gitlab-runner:
+    image: gitlab/gitlab-runner:alpine
+    container_name: gitlab-runner
+    restart: always
+    depends_on:
+      - gitlab
+    volumes:
+      - ./gitlab/gitlab-runner:/etc/gitlab-runner
+    networks:
+      - gitlab
     
     
 
