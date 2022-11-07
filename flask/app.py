@@ -1,5 +1,7 @@
 import json, sqlite3, click, functools, os, hashlib, time, random, sys
 # import bcrypt
+from datetime import timedelta
+
 import bcrypt
 from flask import Flask, current_app, g, session, redirect, render_template, url_for, request
 
@@ -172,6 +174,11 @@ def register():
 
         username = request.form['username']
         password = request.form['password']
+
+        if len(password) < 8:
+            errored = True
+            passworderror = "The length of your password should be 8 or more characters"
+
         db = connect_db()
         c = db.cursor()
 
@@ -243,6 +250,8 @@ if __name__ == "__main__":
     if (len(sys.argv) == 2):
         runport = sys.argv[1]
     try:
+        session.permanent = True
+        app.permanent_session_lifetime = timedelta(minutes=1) # Kill session after 1 minute
         app.run()  # runs on machine ip address to make it visible on netowrk
     except:
         print("Something went wrong. the usage of the server is either")
