@@ -37,10 +37,10 @@ services:
   gitlab:
     image: 'gitlab/gitlab-ee:latest'
     restart: always
-    hostname: 'localhost'
+    hostname: '130.226.140.218'
     environment:
       GITLAB_OMNIBUS_CONFIG:
-        external_url 'http://localhost'
+        external_url 'http://130.226.140.218'
     ports:
       - '8080:80'
       - '8443:443'
