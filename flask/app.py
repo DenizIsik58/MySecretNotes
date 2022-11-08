@@ -164,6 +164,8 @@ def login():
                 return redirect(url_for('index'))
             else:
                 error = "Wrong username or password!"
+        else:
+            error = "Wrong username or password!"
     return render_template('login.html', error=error)
 
 
