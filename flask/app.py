@@ -1,5 +1,7 @@
 import json, sqlite3, click, functools, os, hashlib, time, random, sys
 # import bcrypt
+import secrets
+import string
 from datetime import timedelta
 
 import bcrypt
@@ -26,7 +28,7 @@ CREATE TABLE notes (
     assocUser INTEGER NOT NULL,
     dateWritten DATETIME NOT NULL,
     note TEXT NOT NULL,
-    publicID INTEGER NOT NULL
+    publicID TEXT NOT NULL
 );
 
 CREATE TABLE users (
@@ -84,7 +86,7 @@ def notes():
 
             statement = """INSERT INTO notes(id,assocUser,dateWritten,note,publicID) VALUES(null, ?, ? ,? ,?);"""
             print(statement)
-            c.execute(statement, ((session['userid'], time.strftime('%Y-%m-%d %H:%M:%S'), note, random.randrange(1000000000, 9999999999))))
+            c.execute(statement, ((session['userid'], time.strftime('%Y-%m-%d %H:%M:%S'), note, str(generate_random_note_id()))))
 
             db.commit()
             db.close()
@@ -100,10 +102,10 @@ def notes():
             result = c.fetchall()
             if len(result) > 0:
                 row = result[0]
-                statement = """INSERT INTO notes(id,assocUser,dateWritten,note,publicID) VALUES(null,%s,'%s', ? ,%s);""" % (session['userid'], row[2], row[4])
+                statement = """INSERT INTO notes(id,assocUser,dateWritten,note,publicID) VALUES(null, %s,?,?,?);""" %(session['userid'])
 
                 # Sanitize sql input from written note since retrieving the note from database could include a sql-command causing sql-injection
-                c.execute(statement, (row[3],))
+                c.execute(statement, (row[2], row[3], row[4]))
             else:
                 importerror = "No such note with that ID!"
 
@@ -241,6 +243,20 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
+def generate_random_note_id():
+    letters = string.ascii_letters
+    digits = string.digits
+    special_chars = string.punctuation
+
+    alphabet = letters + digits + special_chars
+
+    note_id_length = 15
+
+    note_id = ''
+    for i in range(note_id_length):
+        note_id += ''.join(secrets.choice(alphabet))
+
+    return note_id
 
 if __name__ == "__main__":
     # create database if it doesn't exist yet
