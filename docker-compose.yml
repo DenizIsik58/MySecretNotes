@@ -4,7 +4,7 @@ version: '3.9'
 networks:
   5G-WIFI:
     driver: bridge
-  gitlab:
+  gitlab-net:
     name: gitlab-network
 
 services:
@@ -50,19 +50,8 @@ services:
       - ./gitlab/data:/var/opt/gitlab
     shm_size: '256m'
     networks:
-      - gitlab
+      - gitlab-net
 
-  gitlab-runner:
-    image: gitlab/gitlab-runner:alpine
-    container_name: gitlab-runner
-    restart: always
-    depends_on:
-      - gitlab
-    volumes:
-      - ./gitlab/gitlab-runner:/etc/gitlab-runner
-    networks:
-      - gitlab
-    
     
 
 
