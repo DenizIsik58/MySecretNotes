@@ -142,26 +142,28 @@ def login():
         c.execute(get_user_stm, (username,))
         user_res = c.fetchall()
 
-        # Get the salt for the specific user registered in the database
-        salt = user_res[0][2]
-        # Calculate the hashed password
-        hashed_pwd = bcrypt.hashpw(password.encode("utf-8"), salt.encode("utf-8")).decode("utf-8")
+        if len(user_res) > 0:
 
-        # Check if a user exists in the database with the username and the calculated hash
-        statement = "SELECT * FROM users WHERE username = ? AND hashed_password = ?;"
-        c.execute(statement, (username, hashed_pwd))
+            # Get the salt for the specific user registered in the database
+            salt = user_res[0][2]
+            # Calculate the hashed password
+            hashed_pwd = bcrypt.hashpw(password.encode("utf-8"), salt.encode("utf-8")).decode("utf-8")
 
-        result = c.fetchall()
+            # Check if a user exists in the database with the username and the calculated hash
+            statement = "SELECT * FROM users WHERE username = ? AND hashed_password = ?;"
+            c.execute(statement, (username, hashed_pwd))
 
-        # If they exist, start a new session and redirect to the notes page
-        if len(result) > 0:
-            session.clear()
-            session['logged_in'] = True
-            session['userid'] = result[0][0]
-            session['username'] = result[0][1]
-            return redirect(url_for('index'))
-        else:
-            error = "Wrong username or password!"
+            result = c.fetchall()
+
+            # If they exist, start a new session and redirect to the notes page
+            if len(result) > 0:
+                session.clear()
+                session['logged_in'] = True
+                session['userid'] = result[0][0]
+                session['username'] = result[0][1]
+                return redirect(url_for('index'))
+            else:
+                error = "Wrong username or password!"
     return render_template('login.html', error=error)
 
 
